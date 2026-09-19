@@ -6,7 +6,9 @@ struct SidekickApp: App {
     let container: ModelContainer = {
         let schema = Schema([WorkTask.self, ChatMessage.self, ToolStep.self, Attachment.self, Artifact.self, MemoryItem.self])
         do {
-            return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)])
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)])
+            Self.reconcileInterruptedTasks(in: container)
+            return container
         } catch {
             fatalError("Could not create model container: \(error)")
         }
@@ -17,6 +19,23 @@ struct SidekickApp: App {
             RootView()
         }
         .modelContainer(container)
+    }
+
+    /// Runs and approvals live only in memory, so any task still marked active after a relaunch was interrupted.
+    @MainActor
+    private static func reconcileInterruptedTasks(in container: ModelContainer) {
+        let context = container.mainContext
+        let active = [TaskStatus.running.rawValue, TaskStatus.waitingApproval.rawValue]
+        let descriptor = FetchDescriptor<WorkTask>(predicate: #Predicate { active.contains($0.statusRaw) })
+        guard let tasks = try? context.fetch(descriptor), !tasks.isEmpty else { return }
+        for task in tasks {
+            task.status = .failed
+            task.lastError = "Interrupted when the app closed. Send a follow-up to continue."
+            for step in task.messages.flatMap(\.steps) where step.status == .running {
+                step.status = .failed
+            }
+        }
+        try? context.save()
     }
 }
 

@@ -69,7 +69,7 @@ struct GenerateImageTool: AgentTool {
         if let b64 = first["b64_json"]?.stringValue, let d = Data(base64Encoded: b64) {
             data = d
         } else if let urlString = first["url"]?.stringValue, let url = URL(string: urlString) {
-            data = try await URLSession.shared.data(from: url).0
+            data = try await SafeHTTP.download(URLRequest(url: url), limit: 30_000_000).0
         } else {
             throw ToolError("Image provider returned an unsupported payload.")
         }

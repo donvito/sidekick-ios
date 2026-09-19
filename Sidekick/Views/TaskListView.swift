@@ -39,7 +39,7 @@ struct TaskListView: View {
                                 for i in offsets {
                                     let task = others[i]
                                     runner.cancel(task)
-                                    modelContext.delete(task)
+                                    FileStore.delete(task, in: modelContext)
                                 }
                                 try? modelContext.save()
                             }

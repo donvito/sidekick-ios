@@ -205,8 +205,15 @@ enum FileStore {
         let dir = root.appendingPathComponent(folder, isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let safe = filename.replacingOccurrences(of: "/", with: "-")
-        let unique = "\(Int(Date().timeIntervalSince1970))-\(safe)"
-        try data.write(to: dir.appendingPathComponent(unique))
+        let unique = "\(UUID().uuidString.prefix(8))-\(safe)"
+        try data.write(to: dir.appendingPathComponent(unique), options: .withoutOverwriting)
         return "\(folder)/\(unique)"
+    }
+
+    /// Deletes a task together with every file its attachments and artifacts reference.
+    static func delete(_ task: WorkTask, in context: ModelContext) {
+        let urls = task.artifacts.map(\.url) + task.messages.flatMap { $0.attachments.map(\.url) }
+        for url in urls { try? FileManager.default.removeItem(at: url) }
+        context.delete(task)
     }
 }

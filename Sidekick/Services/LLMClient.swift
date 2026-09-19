@@ -7,10 +7,12 @@ enum LLMError: LocalizedError {
     case notConfigured
     case http(Int, String)
     case invalidResponse(String)
+    case insecureBaseURL
 
     var errorDescription: String? {
         switch self {
         case .notConfigured: "Add an API key and model in Settings first."
+        case .insecureBaseURL: "Plain http:// is only allowed for local/private network providers. Use https:// for remote providers."
         case .http(let code, let body): "Provider returned HTTP \(code): \(body.prefix(300))"
         case .invalidResponse(let s): "Unexpected response: \(s.prefix(300))"
         }
@@ -125,6 +127,9 @@ struct LLMClient {
         guard settings.isConfigured, let url = URL(string: settings.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/")) + path) else {
             throw LLMError.notConfigured
         }
+        if url.scheme?.lowercased() == "http" && SafeHTTP.isPublicHost(url) {
+            throw LLMError.insecureBaseURL
+        }
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -218,7 +223,7 @@ struct LLMClient {
     func getData(path: String) async throws -> Data {
         var request = try makeRequest(path: path, body: Data(), method: "GET")
         request.httpBody = nil
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await SafeHTTP.download(request, limit: 200_000_000)
         try Self.check(response, data)
         return data
     }
