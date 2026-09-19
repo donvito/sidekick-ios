@@ -1,0 +1,54 @@
+name: Sidekick
+options:
+  bundleIdPrefix: com.donvito
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  Sidekick:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sidekick
+    entitlements:
+      path: Sidekick/Resources/Sidekick.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+    info:
+      path: Sidekick/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Sidekick
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        LSSupportsOpeningDocumentsInPlace: true
+        UIFileSharingEnabled: true
+        NSCalendarsFullAccessUsageDescription: Sidekick reads and creates calendar events so it can plan your schedule.
+        NSRemindersFullAccessUsageDescription: Sidekick creates reminders for tasks you ask it to track.
+        NSHealthShareUsageDescription: Sidekick summarizes your activity, sleep and heart data when you ask for health insights.
+        NSHealthUpdateUsageDescription: Sidekick can log workouts or mindful minutes on your request.
+        NSCameraUsageDescription: Sidekick can look at photos you take to answer questions about them.
+        NSPhotoLibraryUsageDescription: Sidekick can analyze images you pick from your library.
+        NSPhotoLibraryAddUsageDescription: Sidekick saves generated images to your library when you ask.
+        NSContactsUsageDescription: Sidekick can look up contacts when drafting emails.
+        NSLocationWhenInUseUsageDescription: Sidekick uses your location for weather and nearby suggestions.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.donvito.sidekick
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        GENERATE_INFOPLIST_FILE: false
+        ENABLE_USER_SCRIPT_SANDBOXING: true
+        SWIFT_STRICT_CONCURRENCY: minimal

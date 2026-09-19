@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Sidekick</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Sidekick reads and creates calendar events so it can plan your schedule.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Sidekick can look at photos you take to answer questions about them.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Sidekick can look up contacts when drafting emails.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Sidekick summarizes your activity, sleep and heart data when you ask for health insights.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Sidekick can log workouts or mindful minutes on your request.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Sidekick uses your location for weather and nearby suggestions.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Sidekick saves generated images to your library when you ask.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Sidekick can analyze images you pick from your library.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Sidekick creates reminders for tasks you ask it to track.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+</dict>
+</plist>
