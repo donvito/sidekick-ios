@@ -17,31 +17,41 @@ struct SettingsView: View {
                     Picker("Provider", selection: $settings.preset) {
                         ForEach(ProviderPreset.allCases) { Text($0.label).tag($0) }
                     }
-                    if settings.preset.needsBaseURL {
-                        TextField("Base URL (…/v1)", text: $settings.baseURL)
-                            .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
-                    }
-                    HStack {
-                        if showKey {
-                            TextField("API key", text: $settings.apiKey)
-                        } else {
-                            SecureField("API key", text: $settings.apiKey)
+                    if !settings.preset.isLocal {
+                        if settings.preset.needsBaseURL {
+                            TextField("Base URL (…/v1)", text: $settings.baseURL)
+                                .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
                         }
-                        Button { showKey.toggle() } label: { Image(systemName: showKey ? "eye.slash" : "eye") }
-                            .buttonStyle(.plain).foregroundStyle(.secondary)
-                    }
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    TextField("Chat model (must support tools)", text: $settings.model)
+                        HStack {
+                            if showKey {
+                                TextField("API key", text: $settings.apiKey)
+                            } else {
+                                SecureField("API key", text: $settings.apiKey)
+                            }
+                            Button { showKey.toggle() } label: { Image(systemName: showKey ? "eye.slash" : "eye") }
+                                .buttonStyle(.plain).foregroundStyle(.secondary)
+                        }
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Chat model (must support tools)", text: $settings.model)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
                 } header: {
                     Text("AI provider")
                 } footer: {
-                    Text("Your key is stored in the iOS Keychain and only sent to the provider you choose. Any OpenAI-compatible endpoint works.")
+                    if settings.preset.isLocal {
+                        Text("Runs Gemma on your iPhone with LiteRT‑LM. Works in airplane mode. Offline chat covers questions, writing, attached files and photos; web research, calendar and file creation need a cloud provider.")
+                    } else {
+                        Text("Your key is stored in the iOS Keychain and only sent to the provider you choose. Any OpenAI-compatible endpoint works.")
+                    }
                 }
 
-                Section("Media generation") {
-                    TextField("Image model", text: $settings.imageModel).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    TextField("Video model", text: $settings.videoModel).textInputAutocapitalization(.never).autocorrectionDisabled()
+                if settings.preset.isLocal {
+                    LocalModelsSection()
+                } else {
+                    Section("Media generation") {
+                        TextField("Image model", text: $settings.imageModel).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Video model", text: $settings.videoModel).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
                 }
 
                 Section {
@@ -80,12 +90,19 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Capabilities") {
+                Section {
                     ForEach(ToolRegistry.all, id: \.name) { tool in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(tool.name).font(.subheadline.monospaced())
                             Text(tool.description).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         }
+                    }
+                    .foregroundStyle(settings.preset.supportsTools ? .primary : .tertiary)
+                } header: {
+                    Text("Capabilities")
+                } footer: {
+                    if !settings.preset.supportsTools {
+                        Text("Tools are unavailable with the on-device model. Switch to a cloud provider to use them.")
                     }
                 }
             }
@@ -125,24 +142,29 @@ struct OnboardingView: View {
                         FeatureRow(icon: "calendar", color: .orange, title: "Runs your schedule", detail: "Reads your calendar, books events and reminders — with your approval.")
                         FeatureRow(icon: "doc.richtext", color: .purple, title: "Creates deliverables", detail: "PDFs, spreadsheets, images, videos and email drafts, saved to your Library.")
                         FeatureRow(icon: "heart.text.square", color: .red, title: "Understands your data", detail: "Photos, files and Apple Health — analyzed on request.")
+                        FeatureRow(icon: "iphone.gen3", color: .green, title: "Works offline", detail: "Chat privately with Gemma running on your iPhone — no internet, no account.")
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Connect an AI provider").font(.headline)
+                        Text("Choose how Sidekick thinks").font(.headline)
                         Picker("Provider", selection: $settings.preset) {
                             ForEach(ProviderPreset.allCases) { Text($0.label).tag($0) }
                         }
                         .pickerStyle(.menu)
-                        if settings.preset.needsBaseURL {
-                            TextField("Base URL (…/v1)", text: $settings.baseURL)
+                        if settings.preset.isLocal {
+                            LocalModelOnboardingPicker()
+                        } else {
+                            if settings.preset.needsBaseURL {
+                                TextField("Base URL (…/v1)", text: $settings.baseURL)
+                                    .textFieldStyle(.roundedBorder)
+                                    .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
+                            }
+                            SecureField(settings.preset.requiresAPIKey ? "API key" : "API key (optional)", text: $settings.apiKey)
                                 .textFieldStyle(.roundedBorder)
-                                .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
+                                .textInputAutocapitalization(.never).autocorrectionDisabled()
+                            TextField("Model", text: $settings.model)
+                                .textFieldStyle(.roundedBorder)
+                                .textInputAutocapitalization(.never).autocorrectionDisabled()
                         }
-                        SecureField(settings.preset.requiresAPIKey ? "API key" : "API key (optional)", text: $settings.apiKey)
-                            .textFieldStyle(.roundedBorder)
-                            .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        TextField("Model", text: $settings.model)
-                            .textFieldStyle(.roundedBorder)
-                            .textInputAutocapitalization(.never).autocorrectionDisabled()
                         TextField("Your name (optional)", text: $settings.userName)
                             .textFieldStyle(.roundedBorder)
                     }

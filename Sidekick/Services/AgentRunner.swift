@@ -96,7 +96,7 @@ final class AgentRunner {
                 context.insert(assistant)
 
                 var calls: [Int: ToolCall] = [:]
-                for try await event in client.streamChat(messages: transcript, tools: ToolRegistry.specs) {
+                for try await event in try stream(transcript, client: client, settings: settings) {
                     switch event {
                     case .textDelta(let delta):
                         assistant.content += delta
@@ -183,6 +183,16 @@ final class AgentRunner {
         try? context.save()
     }
 
+    private func stream(_ transcript: [LLMMessage], client: LLMClient, settings: AppSettings) throws -> AsyncThrowingStream<StreamEvent, Error> {
+        guard settings.preset.isLocal else {
+            return client.streamChat(messages: transcript, tools: ToolRegistry.specs)
+        }
+        guard let model = LocalModelStore.shared.model(withId: settings.localModelId) else {
+            throw LocalLLMError.noModelSelected
+        }
+        return LocalLLMEngine.shared.streamChat(model: model, messages: transcript)
+    }
+
     // MARK: - Transcript
 
     private func buildTranscript(task: WorkTask, context: ModelContext, settings: AppSettings) -> [LLMMessage] {
@@ -222,6 +232,17 @@ final class AgentRunner {
         let f = DateFormatter()
         f.dateStyle = .full
         f.timeStyle = .short
+        if !settings.preset.supportsTools {
+            var prompt = """
+            You are Sidekick, a friendly personal AI assistant running privately on the user's iPhone, fully offline. You can chat, answer questions, brainstorm, write and edit text, summarize files the user attaches, and describe images. You cannot browse the web, access the calendar, or create files in this offline mode; if asked, say so briefly and offer to help another way (or suggest switching to a cloud provider in Settings).
+
+            Current date/time: \(f.string(from: .now)) (\(TimeZone.current.identifier)).
+
+            Be concise and helpful. Use short markdown: headings, bullets, bold. No filler.
+            """
+            appendUserContext(to: &prompt, settings: settings, memories: memories)
+            return prompt
+        }
         var prompt = """
         You are Sidekick, a personal AI assistant that gets work done on the user's iPhone. You are not just a chatbot: you plan, use tools, and deliver finished results (files, images, calendar changes, research summaries, email drafts).
 
@@ -239,6 +260,11 @@ final class AgentRunner {
         - If a tool fails or the user declines an action, explain briefly and offer an alternative.
         - Be concise and friendly. Use short markdown: headings, bullets, bold. No filler.
         """
+        appendUserContext(to: &prompt, settings: settings, memories: memories)
+        return prompt
+    }
+
+    private func appendUserContext(to prompt: inout String, settings: AppSettings, memories: [MemoryItem]) {
         if !settings.userName.isEmpty || !settings.userAbout.isEmpty {
             prompt += "\n\nAbout the user:"
             if !settings.userName.isEmpty { prompt += "\n- Name: \(settings.userName)" }
@@ -247,7 +273,6 @@ final class AgentRunner {
         if !memories.isEmpty {
             prompt += "\n\nThings you remember about the user:\n" + memories.map { "- \($0.text)" }.joined(separator: "\n")
         }
-        return prompt
     }
 
     private static func deriveTitle(from text: String, attachments: [PendingAttachment]) -> String {

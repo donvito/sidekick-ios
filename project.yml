@@ -11,12 +11,19 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
     DEVELOPMENT_TEAM: ""
     CODE_SIGN_STYLE: Automatic
+packages:
+  LiteRTLM:
+    url: https://github.com/google-ai-edge/LiteRT-LM.git
+    exactVersion: 0.17.1
 targets:
   Sidekick:
     type: application
     platform: iOS
     sources:
       - path: Sidekick
+    dependencies:
+      - package: LiteRTLM
+        product: LiteRTLM
     entitlements:
       path: Sidekick/Resources/Sidekick.entitlements
       properties:
