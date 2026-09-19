@@ -8,7 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0E60B328F7E45819206C7A7C /* TaskListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F40AA7CC0CBF6D12766D41 /* TaskListView.swift */; };
+		25A8F47B22C25F97FD3325C3 /* LiteRTLM in Frameworks */ = {isa = PBXBuildFile; productRef = D2BDE61E84C08A4920DB6886 /* LiteRTLM */; };
 		28E9E2DED6E5B67C53838833 /* WebTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93E5F3FC7BAF131D2F96A98 /* WebTools.swift */; };
+		2ECD7BBF6C42CE949EEEB385 /* LocalLLMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */; };
+		2F802E81ED2191FC0B05153B /* LocalModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E547B52733FDF948D6D577F /* LocalModelStore.swift */; };
 		341727AEB626E61C8F8894C1 /* LLMClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3450E3C60C7960DA56DDA3 /* LLMClient.swift */; };
 		35E55548D2B4EB9AADF0F1D1 /* Tool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156D3B7008F9D31EA95C819F /* Tool.swift */; };
 		45CCD3218C8A533959CBED3A /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA9FD99E308B8943DC782C3 /* JSONValue.swift */; };
@@ -22,6 +25,7 @@
 		CE194CB916AFDD908236DF18 /* HealthTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBEF8CE57636CF852B80BB3A /* HealthTool.swift */; };
 		D2AFB434D5EB61ED05679D24 /* CreationTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525730E8890BFE7E2DC2C077 /* CreationTools.swift */; };
 		E164E75083BCC02E79C25338 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3010C51B410344FCFF80D5EF /* HomeView.swift */; };
+		EC1136DE15965CC4480B758B /* LocalModelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8524B748E351735DE8C37D2E /* LocalModelsView.swift */; };
 		F10A7E29A7565A3BCD843A59 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B1D86B5C83BC2B396E778A /* TaskDetailView.swift */; };
 		F523EBF86249B68AFD025CF5 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C32B4406D5E455787F60584 /* LibraryView.swift */; };
 		FDC1ED09FFE06E12C9A8593B /* QuickActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA613A0FC4146BE5C876FA64 /* QuickActions.swift */; };
@@ -32,6 +36,7 @@
 		031566B2F03B372AA109F61F /* SidekickApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidekickApp.swift; sourceTree = "<group>"; };
 		0DAF43CF71C4DE3A272B7B6C /* Composer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Composer.swift; sourceTree = "<group>"; };
 		156D3B7008F9D31EA95C819F /* Tool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tool.swift; sourceTree = "<group>"; };
+		1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLLMEngine.swift; sourceTree = "<group>"; };
 		3010C51B410344FCFF80D5EF /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F3450E3C60C7960DA56DDA3 /* LLMClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMClient.swift; sourceTree = "<group>"; };
 		525730E8890BFE7E2DC2C077 /* CreationTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreationTools.swift; sourceTree = "<group>"; };
@@ -39,9 +44,11 @@
 		67F40AA7CC0CBF6D12766D41 /* TaskListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListView.swift; sourceTree = "<group>"; };
 		6B26C02AE81A38529A39F28F /* AttachmentImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentImporter.swift; sourceTree = "<group>"; };
 		6D171427EB5F8FD56FEF963D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		6E547B52733FDF948D6D577F /* LocalModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalModelStore.swift; sourceTree = "<group>"; };
 		6EA9FD99E308B8943DC782C3 /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
 		77E2C08285C84A5E91602A40 /* Sidekick.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sidekick.entitlements; sourceTree = "<group>"; };
 		7D78B7F363F9C21481D37320 /* CalendarTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTools.swift; sourceTree = "<group>"; };
+		8524B748E351735DE8C37D2E /* LocalModelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalModelsView.swift; sourceTree = "<group>"; };
 		AA613A0FC4146BE5C876FA64 /* QuickActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActions.swift; sourceTree = "<group>"; };
 		AFDB7F9EEE69B5FA5AE87C29 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BFC79369C82512A6046AEA94 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -52,6 +59,17 @@
 		E405154CC089E02A80A88085 /* AgentRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRunner.swift; sourceTree = "<group>"; };
 		F93E5F3FC7BAF131D2F96A98 /* WebTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebTools.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		82E6DD0F756878B5D881B02D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25A8F47B22C25F97FD3325C3 /* LiteRTLM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		2FEEF1A31247C1D51D43AD07 /* Tools */ = {
@@ -118,6 +136,8 @@
 				6B26C02AE81A38529A39F28F /* AttachmentImporter.swift */,
 				6EA9FD99E308B8943DC782C3 /* JSONValue.swift */,
 				4F3450E3C60C7960DA56DDA3 /* LLMClient.swift */,
+				1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */,
+				6E547B52733FDF948D6D577F /* LocalModelStore.swift */,
 				2FEEF1A31247C1D51D43AD07 /* Tools */,
 			);
 			path = Services;
@@ -138,6 +158,7 @@
 				0DAF43CF71C4DE3A272B7B6C /* Composer.swift */,
 				3010C51B410344FCFF80D5EF /* HomeView.swift */,
 				5C32B4406D5E455787F60584 /* LibraryView.swift */,
+				8524B748E351735DE8C37D2E /* LocalModelsView.swift */,
 				AA613A0FC4146BE5C876FA64 /* QuickActions.swift */,
 				BFC79369C82512A6046AEA94 /* SettingsView.swift */,
 				D7B1D86B5C83BC2B396E778A /* TaskDetailView.swift */,
@@ -154,6 +175,7 @@
 			buildConfigurationList = 5D855AADC95DBAD3D8E82287 /* Build configuration list for PBXNativeTarget "Sidekick" */;
 			buildPhases = (
 				1BEA41162C1262EBB1D9712E /* Sources */,
+				82E6DD0F756878B5D881B02D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -161,6 +183,7 @@
 			);
 			name = Sidekick;
 			packageProductDependencies = (
+				D2BDE61E84C08A4920DB6886 /* LiteRTLM */,
 			);
 			productName = Sidekick;
 			productReference = CF9282E7B5DC14F82CB6B756 /* Sidekick.app */;
@@ -190,6 +213,9 @@
 			);
 			mainGroup = 4CCE2D747CF72993334AA88A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5D0A2BCBFC5D6C73652A7B67 /* XCRemoteSwiftPackageReference "LiteRT-LM" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5E5C0BBF1FAC234C3840B5A /* Products */;
 			projectDirPath = "";
@@ -216,6 +242,9 @@
 				45CCD3218C8A533959CBED3A /* JSONValue.swift in Sources */,
 				341727AEB626E61C8F8894C1 /* LLMClient.swift in Sources */,
 				F523EBF86249B68AFD025CF5 /* LibraryView.swift in Sources */,
+				2ECD7BBF6C42CE949EEEB385 /* LocalLLMEngine.swift in Sources */,
+				2F802E81ED2191FC0B05153B /* LocalModelStore.swift in Sources */,
+				EC1136DE15965CC4480B758B /* LocalModelsView.swift in Sources */,
 				66659AC783AE3848E7B991ED /* Models.swift in Sources */,
 				FDC1ED09FFE06E12C9A8593B /* QuickActions.swift in Sources */,
 				821F71A16A97C41E85C5A915 /* SettingsView.swift in Sources */,
@@ -421,6 +450,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5D0A2BCBFC5D6C73652A7B67 /* XCRemoteSwiftPackageReference "LiteRT-LM" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/LiteRT-LM.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.17.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D2BDE61E84C08A4920DB6886 /* LiteRTLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5D0A2BCBFC5D6C73652A7B67 /* XCRemoteSwiftPackageReference "LiteRT-LM" */;
+			productName = LiteRTLM;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 323CC4A835B47442F116B391 /* Project object */;
 }
