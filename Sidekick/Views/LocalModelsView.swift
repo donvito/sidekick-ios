@@ -107,6 +107,8 @@ private struct CatalogRow: View {
             }
             if let error = store.errors[entry.id] {
                 Text(error).font(.caption).foregroundStyle(.red)
+            } else if store.canResume(entry) {
+                Text("Paused — tap Resume to continue.").font(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 2)
@@ -124,7 +126,7 @@ private struct CatalogRow: View {
             .buttonStyle(.plain)
         } else {
             Button { store.download(entry) } label: {
-                Text(store.errors[entry.id] == nil ? "Download" : "Resume").font(.subheadline.weight(.semibold))
+                Text(store.canResume(entry) ? "Resume" : "Download").font(.subheadline.weight(.semibold))
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)

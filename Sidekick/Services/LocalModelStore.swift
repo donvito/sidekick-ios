@@ -132,6 +132,11 @@ final class LocalModelStore {
         installed.first { $0.id == id }
     }
 
+    /// True when a paused or interrupted download can continue from where it stopped.
+    func canResume(_ entry: LocalModelCatalogEntry) -> Bool {
+        resumeData[entry.id] != nil
+    }
+
     // MARK: - Downloads
 
     func download(_ entry: LocalModelCatalogEntry) {
@@ -178,7 +183,7 @@ final class LocalModelStore {
     }
 
     private var downloaders: [String: ModelDownloader] = [:]
-    private var resumeData: [String: Data] = [:]
+    private(set) var resumeData: [String: Data] = [:]
 
     // MARK: - Import / delete
 
