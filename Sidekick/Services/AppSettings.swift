@@ -3,12 +3,13 @@ import Security
 import Observation
 
 enum ProviderPreset: String, CaseIterable, Identifiable {
-    case openai, openrouter, vercel, ollama, custom
+    case local, openai, openrouter, vercel, ollama, custom
 
     var id: String { rawValue }
 
     var label: String {
         switch self {
+        case .local: "On-device (offline)"
         case .openai: "OpenAI"
         case .openrouter: "OpenRouter"
         case .vercel: "Vercel AI Gateway"
@@ -19,6 +20,7 @@ enum ProviderPreset: String, CaseIterable, Identifiable {
 
     var baseURL: String {
         switch self {
+        case .local: ""
         case .openai: "https://api.openai.com/v1"
         case .openrouter: "https://openrouter.ai/api/v1"
         case .vercel: "https://ai-gateway.vercel.sh/v1"
@@ -29,6 +31,7 @@ enum ProviderPreset: String, CaseIterable, Identifiable {
 
     var defaultModel: String {
         switch self {
+        case .local: ""
         case .openai: "gpt-4.1-mini"
         case .openrouter: "openai/gpt-4.1-mini"
         case .vercel: "openai/gpt-4.1-mini"
@@ -37,9 +40,13 @@ enum ProviderPreset: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Runs entirely on the device with LiteRT-LM; no key, URL or network.
+    var isLocal: Bool { self == .local }
     var supportsMedia: Bool { self == .openai || self == .custom }
-    var requiresAPIKey: Bool { self != .ollama && self != .custom }
+    var requiresAPIKey: Bool { self != .ollama && self != .custom && self != .local }
     var needsBaseURL: Bool { self == .ollama || self == .custom }
+    /// Local models only chat (text + images); tools stay with OpenAI-compatible providers.
+    var supportsTools: Bool { self != .local }
 }
 
 @Observable
@@ -51,7 +58,7 @@ final class AppSettings {
     var preset: ProviderPreset {
         didSet {
             defaults.set(preset.rawValue, forKey: "preset")
-            if preset != .custom {
+            if preset != .custom && !preset.isLocal {
                 baseURL = preset.baseURL
                 if model.isEmpty || oldValue != preset { model = preset.defaultModel }
             }
@@ -66,12 +73,18 @@ final class AppSettings {
     var userAbout: String { didSet { defaults.set(userAbout, forKey: "userAbout") } }
     var hasOnboarded: Bool { didSet { defaults.set(hasOnboarded, forKey: "hasOnboarded") } }
 
+    /// Filename of the installed `.litertlm` model used when `preset == .local`.
+    var localModelId: String { didSet { defaults.set(localModelId, forKey: "localModelId") } }
+
     var apiKey: String {
         didSet { Keychain.set(apiKey, for: "apiKey") }
     }
 
     var isConfigured: Bool {
-        !baseURL.isEmpty && !model.isEmpty && (!apiKey.isEmpty || !preset.requiresAPIKey)
+        if preset.isLocal {
+            return !localModelId.isEmpty && FileManager.default.fileExists(atPath: LocalModelStore.directory.appendingPathComponent(localModelId).path)
+        }
+        return !baseURL.isEmpty && !model.isEmpty && (!apiKey.isEmpty || !preset.requiresAPIKey)
     }
 
     private init() {
@@ -86,6 +99,7 @@ final class AppSettings {
         userName = defaults.string(forKey: "userName") ?? ""
         userAbout = defaults.string(forKey: "userAbout") ?? ""
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
+        localModelId = defaults.string(forKey: "localModelId") ?? ""
         apiKey = Keychain.get("apiKey") ?? ""
     }
 }

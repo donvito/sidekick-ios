@@ -73,7 +73,7 @@ struct HomeView: View {
             }
             if !settings.isConfigured {
                 Button { router.tab = .settings } label: {
-                    Label("Add your API key in Settings to get started", systemImage: "exclamationmark.circle")
+                    Label(settings.preset.isLocal ? "Install an on-device model in Settings to get started" : "Add your API key in Settings to get started", systemImage: "exclamationmark.circle")
                         .font(.footnote)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
