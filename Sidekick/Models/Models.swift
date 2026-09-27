@@ -14,11 +14,12 @@ enum StepStatus: String, Codable {
 }
 
 enum ArtifactKind: String, Codable, CaseIterable {
-    case document, image, video, email
+    case document, note, image, video, email
 
     var label: String {
         switch self {
         case .document: "Documents"
+        case .note: "Notes"
         case .image: "Images"
         case .video: "Videos"
         case .email: "Emails"
@@ -28,6 +29,7 @@ enum ArtifactKind: String, Codable, CaseIterable {
     var systemImage: String {
         switch self {
         case .document: "doc.text"
+        case .note: "note.text"
         case .image: "photo"
         case .video: "film"
         case .email: "envelope"

@@ -189,11 +189,20 @@ struct StepRow: View {
 }
 
 struct WorkingIndicator: View {
-    @State private var phase = 0.0
+    @Environment(AppSettings.self) private var settings
+
     var body: some View {
         HStack(spacing: 8) {
             ProgressView().controlSize(.small)
-            Text("Working…").font(.footnote).foregroundStyle(.secondary)
+            Text(label).font(.footnote).foregroundStyle(.secondary)
+        }
+    }
+
+    private var label: String {
+        guard settings.preset.isLocal else { return "Working…" }
+        switch LocalLLMEngine.shared.state {
+        case .loading(let name): return "Loading \(name) on device… (first run takes a moment)"
+        default: return "Thinking on device…"
         }
     }
 }

@@ -61,9 +61,11 @@ struct RootView: View {
         .environment(settings)
         .environment(router)
         .environment(AgentRunner.shared)
+        .environment(LocalModelStore.shared)
         .sheet(isPresented: Binding(get: { !settings.hasOnboarded }, set: { if !$0 { settings.hasOnboarded = true } })) {
             OnboardingView()
                 .environment(settings)
+                .environment(LocalModelStore.shared)
                 .interactiveDismissDisabled()
         }
         .tint(Theme.accent)

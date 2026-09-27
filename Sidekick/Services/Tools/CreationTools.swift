@@ -148,6 +148,31 @@ struct DraftEmailTool: AgentTool {
     }
 }
 
+/// iOS has no public API to write into Apple Notes, so notes are saved to the Library and can be sent to
+/// the Notes app (or anywhere else) through the share sheet from the note view.
+struct CreateNoteTool: AgentTool {
+    let name = "create_note"
+    let description = "Save a note for the user (meeting notes, ideas, lists, journal entries, quick facts). The note is kept in Sidekick's Library and the user can send it to Apple Notes with one tap. Write the full note body in markdown."
+    let parameters = JSONSchema.object([
+        "title": JSONSchema.string("Short note title"),
+        "body": JSONSchema.string("Full note content, markdown allowed"),
+    ], required: ["title", "body"])
+    let requiresApproval = true
+
+    func summary(for args: JSONValue) -> String { "Save note “\(args["title"]?.stringValue ?? "")”" }
+
+    func run(args: JSONValue, context: ToolContext) async throws -> String {
+        guard let title = args["title"]?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty,
+              let body = args["body"]?.stringValue, !body.isEmpty else {
+            throw ToolError("title and body are required")
+        }
+        let slug = title.lowercased().replacingOccurrences(of: #"[^a-z0-9]+"#, with: "-", options: .regularExpression).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+        let content = "# \(title)\n\n\(body)\n"
+        let artifact = try await context.addArtifact(title: title, kind: .note, filename: "\(slug.isEmpty ? "note" : slug).md", mimeType: "text/markdown", data: Data(content.utf8))
+        return "Saved note “\(title)” (artifact id \(artifact.id.uuidString)). Tell the user it is in this task and under Notes in the Library, where they can share it to Apple Notes."
+    }
+}
+
 struct RememberTool: AgentTool {
     let name = "remember"
     let description = "Save a durable fact or preference about the user for future tasks (e.g. 'Works at Acme as head of marketing', 'Prefers morning workouts', 'Partner's name is Ana'). Only store things the user states or clearly implies."

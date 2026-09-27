@@ -13,6 +13,7 @@ struct Composer: View {
     var onStop: () -> Void = {}
 
     @State private var photoItems: [PhotosPickerItem] = []
+    @State private var showPhotoPicker = false
     @State private var showFileImporter = false
     @State private var showCamera = false
     @FocusState private var focused: Bool
@@ -33,9 +34,7 @@ struct Composer: View {
             }
             HStack(alignment: .bottom, spacing: 10) {
                 Menu {
-                    PhotosPicker(selection: $photoItems, maxSelectionCount: 4, matching: .images) {
-                        Label("Photo Library", systemImage: "photo")
-                    }
+                    Button { showPhotoPicker = true } label: { Label("Photo Library", systemImage: "photo") }
                     if UIImagePickerController.isSourceTypeAvailable(.camera) {
                         Button { showCamera = true } label: { Label("Take Photo", systemImage: "camera") }
                     }
@@ -46,6 +45,14 @@ struct Composer: View {
                         .foregroundStyle(.secondary)
                 }
                 .accessibilityLabel("Attach")
+                .photosPicker(isPresented: $showPhotoPicker, selection: $photoItems, maxSelectionCount: 4, matching: .images)
+                .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.pdf, .plainText, .commaSeparatedText, .json, .image, .text, .data], allowsMultipleSelection: true) { result in
+                    if case .success(let urls) = result {
+                        for url in urls {
+                            if let att = try? AttachmentImporter.fromFile(url: url) { attachments.append(att) }
+                        }
+                    }
+                }
 
                 TextField(placeholder, text: $text, axis: .vertical)
                     .lineLimit(1...6)
@@ -81,13 +88,6 @@ struct Composer: View {
                     }
                 }
                 photoItems = []
-            }
-        }
-        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.pdf, .plainText, .commaSeparatedText, .json, .image, .text, .data], allowsMultipleSelection: true) { result in
-            if case .success(let urls) = result {
-                for url in urls {
-                    if let att = try? AttachmentImporter.fromFile(url: url) { attachments.append(att) }
-                }
             }
         }
         .fullScreenCover(isPresented: $showCamera) {

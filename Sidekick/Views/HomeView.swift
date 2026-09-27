@@ -73,10 +73,14 @@ struct HomeView: View {
             }
             if !settings.isConfigured {
                 Button { router.tab = .settings } label: {
-                    Label("Add your API key in Settings to get started", systemImage: "exclamationmark.circle")
+                    Label(settings.preset.isLocal ? "Install an on-device model in Settings to get started" : "Add your API key in Settings to get started", systemImage: "exclamationmark.circle")
                         .font(.footnote)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+            } else if settings.preset.isLocal {
+                Label("On-device model · works offline", systemImage: "iphone.and.arrow.forward.inward")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(12)
@@ -88,7 +92,7 @@ struct HomeView: View {
             Text("What I can do")
                 .font(.headline)
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ForEach(QuickAction.all) { action in
+                ForEach(QuickAction.available(local: settings.preset.isLocal)) { action in
                     Button { selectedAction = action } label: {
                         QuickActionCard(action: action)
                     }

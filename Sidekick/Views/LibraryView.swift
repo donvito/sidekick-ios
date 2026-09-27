@@ -112,13 +112,21 @@ struct ArtifactCard: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(artifact.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                Text(artifact.kind == .email ? "Email draft · tap to open in Mail" : artifact.filename).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(artifactSubtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
         }
         .padding(10)
         .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var artifactSubtitle: String {
+        switch artifact.kind {
+        case .email: "Email draft · tap to open in Mail"
+        case .note: "Note · tap to read or send to Apple Notes"
+        default: artifact.filename
+        }
     }
 }
 
@@ -131,6 +139,7 @@ struct ArtifactDetailView: View {
             Group {
                 switch artifact.kind {
                 case .email: EmailDraftView(artifact: artifact)
+                case .note: NoteView(artifact: artifact)
                 case .video: VideoPlayer(player: AVPlayer(url: artifact.url))
                 default: QuickLookPreview(url: artifact.url)
                 }
@@ -139,10 +148,41 @@ struct ArtifactDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { Button("Done") { dismiss() } }
-                if artifact.kind != .email {
+                if artifact.kind != .email && artifact.kind != .note {
                     ToolbarItem(placement: .topBarTrailing) { ShareLink(item: artifact.url) }
                 }
             }
+        }
+    }
+}
+
+/// Apple Notes has no write API, so a saved note is shown here with a share sheet ("Notes" appears as a
+/// target) and a copy button.
+struct NoteView: View {
+    let artifact: Artifact
+    private var text: String { (try? String(contentsOf: artifact.url, encoding: .utf8)) ?? "" }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(LocalizedStringKey(text.replacingOccurrences(of: "^# .*\\n+", with: "", options: .regularExpression)))
+                    .textSelection(.enabled)
+                ShareLink(item: text, subject: Text(artifact.title), message: Text(artifact.title)) {
+                    Label("Send to Apple Notes…", systemImage: "note.text.badge.plus").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                Button {
+                    UIPasteboard.general.string = text
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                Text("Choose “Notes” in the share sheet to save this into Apple Notes.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            .padding()
         }
     }
 }
