@@ -50,6 +50,7 @@ enum ToolRegistry {
         CreateReminderTool(),
         HealthSummaryTool(),
         CreateDocumentTool(),
+        CreateNoteTool(),
         GenerateImageTool(),
         GenerateVideoTool(),
         DraftEmailTool(),
@@ -61,4 +62,11 @@ enum ToolRegistry {
     }
 
     static var specs: [ToolSpec] { all.map(\.spec) }
+
+    /// Tools that work without any network access, offered to on-device models.
+    static let offlineNames: [String] = [
+        "get_current_datetime", "list_calendar_events", "create_calendar_event", "create_reminder",
+        "create_note", "create_document", "draft_email", "get_health_summary", "remember",
+    ]
+    static var offline: [AgentTool] { offlineNames.compactMap(tool(named:)) }
 }

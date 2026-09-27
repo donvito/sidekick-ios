@@ -39,7 +39,7 @@ struct SettingsView: View {
                     Text("AI provider")
                 } footer: {
                     if settings.preset.isLocal {
-                        Text("Runs Gemma on your iPhone with LiteRT‑LM. Works in airplane mode. Offline chat covers questions, writing, attached files and photos; web research, calendar and file creation need a cloud provider.")
+                        Text("Runs Gemma on your iPhone with LiteRT‑LM. Works in airplane mode: chat, photos, attached files, plus on-device actions like calendar, reminders, notes, documents and email drafts. Web research and image/video generation need a cloud provider.")
                     } else {
                         Text("Your key is stored in the iOS Keychain and only sent to the provider you choose. Any OpenAI-compatible endpoint works.")
                     }
@@ -57,7 +57,7 @@ struct SettingsView: View {
                 Section {
                     Toggle("Ask before taking actions", isOn: $settings.askBeforeActing)
                 } footer: {
-                    Text("When on, Sidekick asks for approval before creating calendar events or reminders.")
+                    Text("When on, Sidekick asks for approval before creating calendar events, reminders or notes.")
                 }
 
                 Section("About you") {
@@ -92,17 +92,24 @@ struct SettingsView: View {
 
                 Section {
                     ForEach(ToolRegistry.all, id: \.name) { tool in
+                        let available = !settings.preset.isLocal || ToolRegistry.offlineNames.contains(tool.name)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(tool.name).font(.subheadline.monospaced())
+                            HStack {
+                                Text(tool.name).font(.subheadline.monospaced())
+                                if !available {
+                                    Text("Cloud only").font(.caption2.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 2)
+                                        .background(Color.secondary.opacity(0.15), in: Capsule())
+                                }
+                            }
                             Text(tool.description).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                         }
+                        .foregroundStyle(available ? .primary : .tertiary)
                     }
-                    .foregroundStyle(settings.preset.supportsTools ? .primary : .tertiary)
                 } header: {
                     Text("Capabilities")
                 } footer: {
-                    if !settings.preset.supportsTools {
-                        Text("Tools are unavailable with the on-device model. Switch to a cloud provider to use them.")
+                    if settings.preset.isLocal {
+                        Text("With the on-device model, tools marked “Cloud only” are unavailable. Everything else runs without internet.")
                     }
                 }
             }

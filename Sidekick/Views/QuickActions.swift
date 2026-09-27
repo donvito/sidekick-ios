@@ -10,6 +10,12 @@ struct QuickAction: Identifiable, Hashable {
     /// Prompt placed in the composer. If it ends with a colon the user is expected to complete it.
     let prompt: String
     let suggestions: [String]
+    /// Needs web access or cloud media generation; hidden when the on-device model is active.
+    var cloudOnly = false
+
+    static func available(local: Bool) -> [QuickAction] {
+        local ? all.filter { !$0.cloudOnly } : all
+    }
 
     static let all: [QuickAction] = [
         QuickAction(id: "research", title: "Research", subtitle: "Deep-dive any topic", icon: "magnifyingglass", color: .blue, category: "Research",
@@ -18,13 +24,20 @@ struct QuickAction: Identifiable, Hashable {
                         "Compare the top 3 project management tools for a 10-person startup and recommend one.",
                         "What are the latest developments in on-device AI models this month? Summarize with sources.",
                         "Find the best-reviewed noise-cancelling headphones under $300 and make a comparison table.",
-                    ]),
+                    ], cloudOnly: true),
         QuickAction(id: "schedule", title: "Plan my day", subtitle: "Calendar & reminders", icon: "calendar", color: .orange, category: "Schedule",
                     prompt: "Look at my calendar for today and tomorrow and help me plan: ",
                     suggestions: [
                         "Look at my calendar for the rest of the week and find three 1-hour slots for deep work. Book them.",
                         "Schedule a 30-minute dentist call on Thursday afternoon and remind me an hour before.",
                         "Give me a briefing of my day: events, and a suggested order to tackle things.",
+                    ]),
+        QuickAction(id: "notes", title: "Take a note", subtitle: "Ideas, lists, meeting notes", icon: "note.text", color: .yellow, category: "Notes",
+                    prompt: "Save a note: ",
+                    suggestions: [
+                        "Save a note titled Grocery list with milk, eggs, spinach, coffee beans and olive oil.",
+                        "Take meeting notes: we agreed to ship v2 on Friday, Ana owns QA, and I'll email the client Monday.",
+                        "Save a note with three book ideas about habits and remind me to pick one on Sunday.",
                     ]),
         QuickAction(id: "documents", title: "Create a document", subtitle: "Reports, plans, PDFs", icon: "doc.richtext", color: .purple, category: "Documents",
                     prompt: "Create a PDF document: ",
@@ -39,7 +52,7 @@ struct QuickAction: Identifiable, Hashable {
                         "Generate a minimalist logo concept for a coffee brand called Northwind Roasters.",
                         "Generate a hero image for a blog post about remote work, warm and optimistic.",
                         "Generate a square Instagram visual announcing a 20% summer sale for a bookstore.",
-                    ]),
+                    ], cloudOnly: true),
         QuickAction(id: "health", title: "Health check-in", subtitle: "Activity, sleep, habits", icon: "heart.text.square", color: .red, category: "Health",
                     prompt: "Review my Apple Health data for the past week and ",
                     suggestions: [

@@ -6,12 +6,14 @@ enum LocalLLMError: LocalizedError {
     case noModelSelected
     case modelMissing(String)
     case noUserMessage
+    case busy
 
     var errorDescription: String? {
         switch self {
         case .noModelSelected: "Pick or download a local model in Settings first."
         case .modelMissing(let name): "The model \(name) is no longer on this device. Download it again in Settings."
         case .noUserMessage: "Nothing to send."
+        case .busy: "The on-device model is still working on another task. Wait for it to finish, then try again."
         }
     }
 }
@@ -30,6 +32,7 @@ final class LocalLLMEngine {
     }
 
     private(set) var state: State = .idle
+    private(set) var isGenerating = false
     private var engine: Engine?
     private var loadedPath: String?
 
@@ -71,16 +74,37 @@ final class LocalLLMEngine {
     }
 
     /// Streams a reply for `messages` (system + history + trailing user turn) as `StreamEvent`s so the
-    /// agent loop can treat it exactly like a remote provider. Tools are not offered to local models.
-    func streamChat(model: InstalledLocalModel, messages: [LLMMessage]) -> AsyncThrowingStream<StreamEvent, Error> {
+    /// agent loop can treat it like a remote provider.
+    ///
+    /// Tool calls are different from the remote path: LiteRT-LM runs them inside its own conversation loop
+    /// (model → tool → model, possibly several times in one turn), so instead of surfacing `toolCall*`
+    /// events this hands each call to `onToolCall`, which executes it (with approval) and returns the
+    /// result text that is fed back to the model. Only one local generation runs at a time.
+    func streamChat(
+        model: InstalledLocalModel,
+        messages: [LLMMessage],
+        tools: [AgentTool] = [],
+        onToolCall: LocalToolDispatcher.Handler? = nil
+    ) -> AsyncThrowingStream<StreamEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task { @MainActor in
+                guard !self.isGenerating else {
+                    continuation.finish(throwing: LocalLLMError.busy)
+                    return
+                }
+                self.isGenerating = true
+                defer {
+                    self.isGenerating = false
+                    LocalToolDispatcher.shared.end()
+                }
                 do {
                     let engine = try await self.engine(for: model)
                     let (system, history, last) = try Self.split(messages)
+                    if let onToolCall { LocalToolDispatcher.shared.begin(onToolCall) }
                     let config = ConversationConfig(
                         systemMessage: system.map { Message($0, role: .system) },
                         initialMessages: history,
+                        tools: onToolCall == nil ? [] : LocalTools.all(for: tools),
                         thinkingConfig: ThinkingConfig(enableThinking: false)
                     )
                     let conversation = try await engine.createConversation(with: config)
@@ -119,12 +143,12 @@ final class LocalLLMEngine {
             case "assistant":
                 var text = message.textContent ?? ""
                 if let calls = message.toolCalls, !calls.isEmpty {
-                    text += calls.map { "\n[used tool \($0.name)]" }.joined()
+                    text += calls.map { "\n[called \($0.name)(\($0.arguments.prefix(300)))]" }.joined()
                 }
                 if !text.isEmpty { converted.append(Message(text, role: .model)) }
             case "tool":
                 if let result = message.textContent, !result.isEmpty {
-                    converted.append(Message("Tool result: \(result.prefix(4000))", role: .model))
+                    converted.append(Message("[tool result] \(result.prefix(4000))", role: .model))
                 }
             default:
                 break

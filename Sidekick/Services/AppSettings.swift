@@ -46,7 +46,6 @@ enum ProviderPreset: String, CaseIterable, Identifiable {
     var requiresAPIKey: Bool { self != .ollama && self != .custom && self != .local }
     var needsBaseURL: Bool { self == .ollama || self == .custom }
     /// Local models only chat (text + images); tools stay with OpenAI-compatible providers.
-    var supportsTools: Bool { self != .local }
 }
 
 @Observable

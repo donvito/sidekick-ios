@@ -96,7 +96,15 @@ final class AgentRunner {
                 context.insert(assistant)
 
                 var calls: [Int: ToolCall] = [:]
-                for try await event in try stream(transcript, client: client, settings: settings) {
+                var localStepCount = 0
+                let localHandler: LocalToolDispatcher.Handler = { [weak self] name, argumentsJSON in
+                    guard let self else { return "Error: task was cancelled." }
+                    let call = ToolCall(id: "local_\(UUID().uuidString.prefix(8))", name: name, arguments: argumentsJSON)
+                    let step = await self.execute(call, order: localStepCount, on: assistant, task: task, context: context, toolContext: toolContext, settings: settings)
+                    localStepCount += 1
+                    return step.result
+                }
+                for try await event in try stream(transcript, client: client, settings: settings, onLocalToolCall: localHandler) {
                     switch event {
                     case .textDelta(let delta):
                         assistant.content += delta
@@ -126,41 +134,7 @@ final class AgentRunner {
 
                 for (i, call) in toolCalls.enumerated() {
                     try Task.checkCancellation()
-                    let step = ToolStep(toolCallId: call.id, toolName: call.name, argumentsJSON: call.arguments, order: i)
-                    step.message = assistant
-                    context.insert(step)
-                    let args = JSONValue.parse(call.arguments)
-
-                    guard let tool = ToolRegistry.tool(named: call.name) else {
-                        step.status = .failed
-                        step.result = "Unknown tool \(call.name)"
-                        continue
-                    }
-
-                    if tool.requiresApproval && settings.askBeforeActing {
-                        let approval = PendingApproval(taskId: task.id, step: step, summary: tool.summary(for: args))
-                        approvals[task.id] = approval
-                        task.status = .waitingApproval
-                        let approved = await approval.wait()
-                        approvals[task.id] = nil
-                        task.status = .running
-                        if !approved {
-                            step.status = .denied
-                            step.result = "The user declined this action. Do not retry it; ask how they would like to proceed instead."
-                            continue
-                        }
-                    }
-
-                    do {
-                        step.result = try await tool.run(args: args, context: toolContext)
-                        step.status = .done
-                    } catch is CancellationError {
-                        throw CancellationError()
-                    } catch {
-                        step.status = .failed
-                        step.result = "Error: \(error.localizedDescription)"
-                    }
-                    try? context.save()
+                    _ = await execute(call, order: i, on: assistant, task: task, context: context, toolContext: toolContext, settings: settings)
                 }
                 task.updatedAt = .now
             }
@@ -183,14 +157,59 @@ final class AgentRunner {
         try? context.save()
     }
 
-    private func stream(_ transcript: [LLMMessage], client: LLMClient, settings: AppSettings) throws -> AsyncThrowingStream<StreamEvent, Error> {
+    /// Runs one tool call end to end: persists a `ToolStep` on `assistant`, asks for approval when needed,
+    /// executes the tool and stores the outcome. Errors are captured into the step so the model can react.
+    private func execute(_ call: ToolCall, order: Int, on assistant: ChatMessage, task: WorkTask, context: ModelContext, toolContext: ToolContext, settings: AppSettings) async -> ToolStep {
+        let step = ToolStep(toolCallId: call.id, toolName: call.name, argumentsJSON: call.arguments, order: order)
+        step.message = assistant
+        context.insert(step)
+        defer {
+            task.updatedAt = .now
+            try? context.save()
+        }
+        let args = JSONValue.parse(call.arguments)
+
+        guard let tool = ToolRegistry.tool(named: call.name) else {
+            step.status = .failed
+            step.result = "Error: unknown tool \(call.name). Use only the tools you were given."
+            return step
+        }
+
+        if tool.requiresApproval && settings.askBeforeActing {
+            let approval = PendingApproval(taskId: task.id, step: step, summary: tool.summary(for: args))
+            approvals[task.id] = approval
+            task.status = .waitingApproval
+            let approved = await approval.wait()
+            approvals[task.id] = nil
+            task.status = .running
+            if !approved {
+                step.status = .denied
+                step.result = "The user declined this action. Do not retry it; ask how they would like to proceed instead."
+                return step
+            }
+        }
+
+        do {
+            step.result = try await tool.run(args: args, context: toolContext)
+            step.status = .done
+        } catch is CancellationError {
+            step.status = .failed
+            step.result = "Cancelled."
+        } catch {
+            step.status = .failed
+            step.result = "Error: \(error.localizedDescription)"
+        }
+        return step
+    }
+
+    private func stream(_ transcript: [LLMMessage], client: LLMClient, settings: AppSettings, onLocalToolCall: @escaping LocalToolDispatcher.Handler) throws -> AsyncThrowingStream<StreamEvent, Error> {
         guard settings.preset.isLocal else {
             return client.streamChat(messages: transcript, tools: ToolRegistry.specs)
         }
         guard let model = LocalModelStore.shared.model(withId: settings.localModelId) else {
             throw LocalLLMError.noModelSelected
         }
-        return LocalLLMEngine.shared.streamChat(model: model, messages: transcript)
+        return LocalLLMEngine.shared.streamChat(model: model, messages: transcript, tools: ToolRegistry.offline, onToolCall: onLocalToolCall)
     }
 
     // MARK: - Transcript
@@ -232,13 +251,20 @@ final class AgentRunner {
         let f = DateFormatter()
         f.dateStyle = .full
         f.timeStyle = .short
-        if !settings.preset.supportsTools {
+        if settings.preset.isLocal {
+            let iso = ISO8601DateFormatter()
+            iso.timeZone = .current
             var prompt = """
-            You are Sidekick, a friendly personal AI assistant running privately on the user's iPhone, fully offline. You can chat, answer questions, brainstorm, write and edit text, summarize files the user attaches, and describe images. You cannot browse the web, access the calendar, or create files in this offline mode; if asked, say so briefly and offer to help another way (or suggest switching to a cloud provider in Settings).
+            You are Sidekick, a friendly personal AI assistant running privately on the user's iPhone, fully offline. You can chat, answer questions, brainstorm, write and edit text, summarize attached files, describe photos, and take actions on the phone with your tools: read and add calendar events, create reminders, save notes and documents, draft emails, read Apple Health data, and remember facts about the user.
 
-            Current date/time: \(f.string(from: .now)) (\(TimeZone.current.identifier)).
+            Current date/time: \(f.string(from: .now)) (\(TimeZone.current.identifier)). ISO 8601 now: \(iso.string(from: .now)).
 
-            Be concise and helpful. Use short markdown: headings, bullets, bold. No filler.
+            How to work:
+            - When the user asks you to schedule, remind, note or save something, call the matching tool right away instead of only describing it. Use one tool call at a time, then report the result in one or two sentences.
+            - Calendar and reminder times must be ISO 8601 with the timezone offset shown above. Check list_calendar_events before proposing a time.
+            - Tools may be declined or fail; if so, tell the user briefly and offer an alternative. Never pretend an action happened.
+            - You cannot browse the web or generate images/videos offline; if asked, say so and suggest a cloud provider in Settings.
+            - Be concise. Use short markdown: bullets and bold. No filler.
             """
             appendUserContext(to: &prompt, settings: settings, memories: memories)
             return prompt
