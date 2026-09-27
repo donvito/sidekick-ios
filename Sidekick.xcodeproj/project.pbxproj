@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0E60B328F7E45819206C7A7C /* TaskListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F40AA7CC0CBF6D12766D41 /* TaskListView.swift */; };
+		120D2D77634287E25CBD2AFA /* LocalTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282D474BFFE33CC882E5B8B4 /* LocalTools.swift */; };
 		25A8F47B22C25F97FD3325C3 /* LiteRTLM in Frameworks */ = {isa = PBXBuildFile; productRef = D2BDE61E84C08A4920DB6886 /* LiteRTLM */; };
 		28E9E2DED6E5B67C53838833 /* WebTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93E5F3FC7BAF131D2F96A98 /* WebTools.swift */; };
 		2ECD7BBF6C42CE949EEEB385 /* LocalLLMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */; };
@@ -37,6 +38,7 @@
 		0DAF43CF71C4DE3A272B7B6C /* Composer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Composer.swift; sourceTree = "<group>"; };
 		156D3B7008F9D31EA95C819F /* Tool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tool.swift; sourceTree = "<group>"; };
 		1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLLMEngine.swift; sourceTree = "<group>"; };
+		282D474BFFE33CC882E5B8B4 /* LocalTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTools.swift; sourceTree = "<group>"; };
 		3010C51B410344FCFF80D5EF /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4F3450E3C60C7960DA56DDA3 /* LLMClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMClient.swift; sourceTree = "<group>"; };
 		525730E8890BFE7E2DC2C077 /* CreationTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreationTools.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				4F3450E3C60C7960DA56DDA3 /* LLMClient.swift */,
 				1E58E24FC66A8B00BA7645DF /* LocalLLMEngine.swift */,
 				6E547B52733FDF948D6D577F /* LocalModelStore.swift */,
+				282D474BFFE33CC882E5B8B4 /* LocalTools.swift */,
 				2FEEF1A31247C1D51D43AD07 /* Tools */,
 			);
 			path = Services;
@@ -245,6 +248,7 @@
 				2ECD7BBF6C42CE949EEEB385 /* LocalLLMEngine.swift in Sources */,
 				2F802E81ED2191FC0B05153B /* LocalModelStore.swift in Sources */,
 				EC1136DE15965CC4480B758B /* LocalModelsView.swift in Sources */,
+				120D2D77634287E25CBD2AFA /* LocalTools.swift in Sources */,
 				66659AC783AE3848E7B991ED /* Models.swift in Sources */,
 				FDC1ED09FFE06E12C9A8593B /* QuickActions.swift in Sources */,
 				821F71A16A97C41E85C5A915 /* SettingsView.swift in Sources */,
