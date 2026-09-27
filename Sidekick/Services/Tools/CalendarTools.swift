@@ -63,8 +63,15 @@ struct ListCalendarEventsTool: AgentTool {
         let store = EventStoreProvider.store
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
         let events = store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
-        if events.isEmpty { return "No events between \(start.formatted()) and \(end.formatted())." }
-        return events.prefix(60).map(EventStoreProvider.describe).joined(separator: "\n")
+        let range = "\(start.formatted(date: .abbreviated, time: .shortened)) – \(end.formatted(date: .abbreviated, time: .shortened))"
+        if events.isEmpty { return "No events between \(range). Only report on the dates the user asked about." }
+        let cal = Calendar.current
+        let grouped = Dictionary(grouping: events.prefix(60)) { cal.startOfDay(for: $0.startDate) }
+        let body = grouped.keys.sorted().map { day in
+            let label = cal.isDateInToday(day) ? "Today" : cal.isDateInTomorrow(day) ? "Tomorrow" : day.formatted(.dateTime.weekday(.wide).month().day())
+            return "\(label):\n" + grouped[day]!.map(EventStoreProvider.describe).joined(separator: "\n")
+        }.joined(separator: "\n\n")
+        return "Events \(range) (only mention the dates the user asked about):\n\n\(body)"
     }
 }
 
